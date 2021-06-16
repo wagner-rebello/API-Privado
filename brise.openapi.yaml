@@ -1,0 +1,678 @@
+openapi: 3.0.2
+info:
+  title: Brise API
+  version: 2.0.0
+  contact:
+    name: AGST
+    url: https://forum.agst.com.br
+    email: ped@agst.com.br
+  description: |
+    A Brise API fornece ferramentas para desenvolver integrações entre seus dispositivos Brise e outros demais dispositivos de automação, possibilitando integrações com sistemas de supervisão e gestão de automação.
+
+    A Brise API é RESTful e trabalha com payloads em formato `JSON`.
+
+    Examples
+      * Obtenha as informações do usuário
+        ```
+          curl --location --request
+          GET 'https://brisev2.agst.com.br:8090/api/v2/user' \
+          --header 'Authorization: Bearer 2gbdx6oar67tqtcmt49t3wpcgycthx'
+        ```
+      * Obtenha dispositivos do usuário
+        ```
+          curl --location --request
+          GET 'https://brisev2.agst.com.br:8090/api/v2/user-devices' \
+          --header 'Authorization: Bearer 2gbdx6oar67tqtcmt49t3wpcgycthx'
+        ```
+
+    **Aletar:** Estamos em fase de testes.
+
+    Última atualização: 26/05/2021
+  x-logo:
+    url: ../logo_Brise1.svg
+    href: https://www.agst.com.br/produtos/brise/
+    altText: API Brise
+
+tags:
+  - name: Usuário
+  - name: Dispositivo
+  - name: Agenda
+    description: |
+      A agenda contempla registros de agendamentos locais que serão executados de forma independente do serviço de Cloud, sendo garantida a execução do agendamento.
+      <aside>Os agendamentos não tem como intensão a garantia da permanência do estado do dispositivo ou do AC durante um período, ou seja, podem haver alterações do contexto por usuários autorizados durante este período.
+
+servers:
+  - url: "https://brisev2.agst.com.br:8090/api/v2"
+    description: Servidor de Produção
+
+components:
+  schemas:
+    schedules:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Nome para identificar o agendamento
+          example: Turno Tarde
+        enable:
+          type: boolean
+          description: Agendamento habilitado
+          example: true
+        date_start:
+          type: integer
+          format: int32
+          description: Data de inicio do agendamento em UT (Universal TIme)
+          example: 1622126644
+        date_end:
+          type: integer
+          format: int32
+          description: Data de fim do agendamento em UT (Universal TIme)
+          example: 1622126644
+        repetition_mode:
+          type: integer
+          format: int32
+          description: |-
+            Modo de repetição:
+            - 0: Sem repetição
+            - 1: Semanal
+            - 2: Dias
+            - 3: Meses
+            - 4: Anos
+          example: 1
+        repetition_value:
+          type: integer
+          format: int32
+          description: |-
+            Modo de repetição:
+            - Sem repetição: any
+            - Semanal: (2<sup>6</sup> domingo) + (2<sup>5</sup> sábado) + (2<sup>4</sup> sexta) + (2<sup>3</sup> quinta) + (2<sup>2</sup> quarta) + (2<sup>1</sup> terça) + (2<sup>0</sup> segunda)
+            - Dias: Número de dias que o agendamento irá se repetir
+            - Meses: Número de meses que o agendamento irá se repetir
+            - Anos: Número de anos que o agendamento irá se repetir
+          example: 1
+    schedelesput:
+      required:
+        [name, enable, date_start, date_end, repetition_mode, repetition_value]
+      allOf:
+        - $ref: "#/components/schemas/schedules"
+      properties:
+        name:
+          maxLength: 20
+          pattern: ^[A-Za-z0-9]{0,20}$
+        date_start:
+          minimum: 0
+        date_end:
+          minimum: 0
+        repetition_mode:
+          minimum: 0
+          maximum: 4
+    variables:
+      type: object
+      properties:
+        state:
+          type: boolean
+          description: Estatus do AC
+          example: true
+        temperature:
+          type: number
+          description: Temperatura do ambiente em [ºC]
+          example: 24.5
+        humidity:
+          type: integer
+          description: Umidade relativa do ambiente em [%]
+          example: 50
+        consumption:
+          type: integer
+          description: Consumo do mês vigente em [KWh] `Obtido por sensor de consumo externo`
+          example: 23
+        consumption_estimated:
+          type: integer
+          description: Consumo estimado do mês vigente em [KWh] `Estimado pelo perfil do uso e capacidade do AC`
+          example: 50
+    devices:
+      type: object
+      properties:
+        device_id:
+          type: integer
+          description: Número de série do dispositivo
+          example: 100000
+        device_user:
+          type: string
+          description: Usuário do dispositivo
+          example: admin
+        device_password:
+          type: string
+          description: Senha do dispositivo
+          example: "123456"
+    user:
+      type: object
+      properties:
+        user_id:
+          type: integer
+          description: Número único de identificação do usuário
+          example: 1
+        name:
+          type: string
+          description: Nome de identificação do usuário
+          example: João
+        email:
+          type: string
+          description: Endereço de email usado para login
+          example: joao@agst.com.br
+        lastlogin:
+          type: integer
+          description: Data e hora do último login feito pelo usuário em UT (Universal Time)
+          example: 1622054380
+    parameter:
+      type: object
+      properties:
+        modeDevice:
+          type: integer
+          description: |-
+            Modo de funcionamento do dispositivo:
+            - 0: Desligado
+            - 1: Manual
+            - 2: Absoluto
+            - 3: Eco
+          example: 0
+        modeAC:
+          type: integer
+          description: |-
+            Modo de funcionamento do Ar Condicionado:
+            - 0: Refrigeração
+            - 1: Aquecimento
+            - 2: Automatico
+            - 3: Ventilação
+          example: 0
+        setpointCool:
+          type: integer
+          description: Temperatura desejada para resfriamento
+          example: 24
+        fanSpeed:
+          type: integer
+          description: |-
+            Velocidade do ventilador
+            - 1: Velocidade Baixa
+            - 2: Velocidade Média
+            - 3: Velocidade Alta
+          example: 3
+        setpointHeat:
+          type: integer
+          description: Temperatura desejada para aquecimento
+          example: 20
+        ecoCool:
+          type: integer
+          description: Temperatura desejada para economia de resfriamento
+          example: 22
+        ecoHeat:
+          type: integer
+          description: Temperatura desejada para economia de aquecimento
+          example: 18
+    parameterput:
+      required:
+        [
+          modeDevice,
+          modeAC,
+          setpointCool,
+          fanSpeed,
+          setpointHeat,
+          ecoCool,
+          ecoHeat,
+        ]
+      allOf:
+        - $ref: "#/components/schemas/parameter"
+      properties:
+        modeDevice:
+          minimum: 0
+          maximum: 3
+        modeAC:
+          minimum: 0
+          maximum: 3
+          description: |-
+            Modo de funcionamento do Ar Condicionado:
+            - 0: Refrigeração
+            - 1: Aquecimento
+            - 2: Automatico `Apenas no Modo Eco de funcionamento dispositivo`
+            - 3: Ventilação
+        setpointCool:
+          minimum: 0
+          maximum: 28
+          description: Temperatura desejada para resfriamento `0 = desliga o AC`
+        fanSpeed:
+          minimum: 1
+          maximum: 3
+        setpointHeat:
+          minimum: 0
+          maximum: 28
+          description: Temperatura desejada para aquecimento `0 = desliga o AC`
+        ecoCool:
+          minimum: 1
+          maximum: 28
+          description: Temperatura desejada para economia de resfriamento `O valor tem que ser < que setpointCool`
+        ecoHeat:
+          minimum: 1
+          maximum: 28
+          description: Temperatura desejada para economia de aquecimento `O valor tem que ser > que setpointHeat`
+    config:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Nome para identificação do dispositivo
+          example: Maquina 1
+        time_zone:
+          type: integer
+          description: Fuso horário
+          example: -3
+        group_leve1:
+          type: string
+          description: Grupo nivel 1
+          example: PredioAdministracao
+        group_leve2:
+          type: string
+          description: Grupo nivel 2
+          example: BlocoA
+        group_leve3:
+          type: string
+          description: Grupo nivel 3
+          example: PrimeiroAndar
+        group_leve4:
+          type: string
+          description: Grupo nivel 4
+          example: SalaReuniao
+        btu:
+          type: integer
+          description: Potencia frigorifica da AC em BTU
+          example: 12000
+        log_day:
+          type: integer
+          description: Dia do mes para registro do consumo
+          example: 31
+        pulse_kw:
+          type: integer
+          description: Numero de pulsos por KW (QuiloWhatt) do sensor de consumo externo
+          example: 2000
+        enable_fan:
+          type: boolean
+          description: Habilita as funções de ventilação
+          example: true
+        enable_heat:
+          type: boolean
+          description: Habilita as funções de aquecimento
+          example: true
+        dnd:
+          type: boolean
+          description: Habilita a função de não perturbe do led sinalizador
+          example: true
+    configput:
+      required:
+        [name, time_zone, btu, log_day, pulse_kw, enable_fan, enable_heat, dnd]
+      allOf:
+        - $ref: "#/components/schemas/config"
+      properties:
+        name:
+          maxLength: 20
+          pattern: ^[A-Za-z0-9]{0,20}$
+        time_zone:
+          minimum: -12
+          maximum: 13
+        group_leve1:
+          maxLength: 20
+          pattern: ^[A-Za-z0-9]{0,20}$
+        group_leve2:
+          maxLength: 20
+          pattern: ^[A-Za-z0-9]{0,20}$
+        group_leve3:
+          maxLength: 20
+          pattern: ^[A-Za-z0-9]{0,20}$
+        group_leve4:
+          maxLength: 20
+          pattern: ^[A-Za-z0-9]{0,20}$
+        log_day:
+          minimum: 1
+          maximum: 31
+          description: Dia do mês para registro do consumo. `O registro irá ocorrer as 23:59:59 do dia.`
+
+  responses:
+    Unauthorized:
+      description: Unauthorized. Seu token de acesso expirou ou foi revogado.
+    Forbidden:
+      description: Forbidden. Não possue acesso ao dispositivo.
+    NoContent:
+      description: No Content. O dispositivo pode estar desligado no momento ou sua autenticação está incorreta.
+    NotFound:
+      description: Not Found. Agendamento não localizado para remove-lo.
+
+  parameters:
+    schedule_id:
+      name: schedule_id
+      in: path
+      description: Número único de identificação do agendamento
+      example: 1622135820
+      required: true
+      schema:
+        type: integer
+    device_id:
+      name: device_id
+      in: path
+      required: true
+      description: Número de série do dispositivo Brise
+      schema:
+        type: string
+        maximum: 999999
+        example: 100000
+
+  securitySchemes:
+    api_key:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    briseAuth:
+      description: Antes de executar chamadas ha API, é necessário um Token de Acesso.<br><br>Para obter um deve-se criar uma conta no serviço através do Brise App em seu smartphone previamente. Para gerar o Token de Acesso [clique aqui](https://brisev2.agst.com.br:8090/api/v2/reqwithlogin), faça seu login que será disponibilizado o Token de Acesso.<h3>Oauth 2.0 authorizationCode authentication</h3>
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: "https://brisev2.agst.com.br:8090/api/v2/authorize"
+          tokenUrl: "https://brisev2.agst.com.br:8090/api/v2/exchange-code"
+
+paths:
+  /user/devices:
+    get:
+      summary: Obtem dispositivos
+      description: Obtem os dispositivos ao qual a conta do usuário tem acesso
+      tags:
+        - Usuário
+      responses:
+        "200":
+          description: OK. Retorna os dispositivos que o usuário tem acesso com sucesso.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  devices:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/devices"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+    post:
+      summary: Adiciona dispositivo
+      description: Adiciona um dispositivo a conta do usuário
+      tags:
+        - Usuário
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              required:
+                - device_id
+                - device_user
+                - device_password
+              properties:
+                device_id:
+                  type: integer
+                  description: Número de série do dispositivo
+                  maximum: 999999
+                  example: 100000
+                device_user:
+                  type: string
+                  description: Usuário do dispositivo
+                  maxLength: 20
+                  example: admin
+                device_password:
+                  type: string
+                  description: Senha do dispositivo
+                  maxLength: 20
+                  example: "123456"
+      responses:
+        "200":
+          description: OK. Adiciona o dispositivo ao usuário com sucesso.
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  "/user/devices/{device_id}":
+    delete:
+      summary: Remove dispositivo
+      description: Remove dispositivo da conta do Usuário
+      tags:
+        - Usuário
+      parameters:
+        - $ref: "#/components/parameters/device_id"
+      responses:
+        "200":
+          description: OK. Dispositivo removido com sucesso.
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          description: Not Found. Este dispositivo não está relacionado ao usuário para remove-lo.
+
+  "/device/{device_id}/configs":
+    get:
+      summary: Obtem configurações
+      description: Obtem as configurações de um dispositivo especifico
+      tags:
+        - Dispositivo
+      parameters:
+        - $ref: "#/components/parameters/device_id"
+      responses:
+        "200":
+          description: OK. Retorna as configurações do dispositivo com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/config"
+        "204":
+          $ref: "#/components/responses/NoContent"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+    put:
+      summary: Define configurações
+      description: Altera as configurações do dispositivo especifico
+      tags:
+        - Dispositivo
+      parameters:
+        - $ref: "#/components/parameters/device_id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/configput"
+      responses:
+        "200":
+          description: OK. Configurações alteradas com sucesso.
+        "204":
+          $ref: "#/components/responses/NoContent"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  "/device/{device_id}/parameters":
+    get:
+      summary: Obtem paremetrizações
+      description: Obtem as paremetrizações de um dispositivo especifico
+      tags:
+        - Dispositivo
+      parameters:
+        - $ref: "#/components/parameters/device_id"
+      responses:
+        "200":
+          description: OK. Retorna as parametrizações do dispositivo com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/parameter"
+        "204":
+          $ref: "#/components/responses/NoContent"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+    put:
+      summary: Define paremetrizações
+      description: Altera as paremetrizações do um dispositivo especifico
+      tags:
+        - Dispositivo
+      parameters:
+        - $ref: "#/components/parameters/device_id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/parameterput"
+      responses:
+        "200":
+          description: OK. Alterada as parametrizações com sucesso.
+        "204":
+          $ref: "#/components/responses/NoContent"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  "/device/{device_id}/variables":
+    get:
+      summary: Obtem variáveis
+      description: Obtem as variáveis do dispositivo
+      tags:
+        - Dispositivo
+      parameters:
+        - $ref: "#/components/parameters/device_id"
+      responses:
+        "200":
+          description: OK. Retorna as variaveis do sistema com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/variables"
+        "204":
+          $ref: "#/components/responses/NoContent"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+  "/device/{device_id}/schedules":
+    get:
+      summary: Obtem agendamentos
+      description: Obtem todos os agendamentos do dispositivo
+      tags:
+        - Agenda
+      parameters:
+        - $ref: "#/components/parameters/device_id"
+      responses:
+        "200":
+          description: OK. Retorna os agendamentos do dispositivo com sucesso.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  schedules:
+                    type: array
+                    items:
+                      allOf:
+                        - type: object
+                          properties:
+                            schedule_id:
+                              type: integer
+                              format: int32
+                              description: Número único de identificação do agendamento
+                              example: 1622126644
+                        - $ref: "#/components/schemas/schedules"
+                        - type: object
+                          properties:
+                            parameter:
+                              $ref: "#/components/schemas/parameter"
+        "204":
+          $ref: "#/components/responses/NoContent"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+    post:
+      summary: Adiciona agendamento
+      description: |
+        Adiciona novo agendamento ao dispositivo.<aside>`Este número (schedule_id) deve ser único. Indicamos o uso do relogio do aplicativo.`</aside>
+      tags:
+        - Agenda
+      parameters:
+        - $ref: "#/components/parameters/device_id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              required: [parameter]
+              allOf:
+                - $ref: "#/components/schemas/schedelesput"
+                - type: object
+                  properties:
+                    parameter:
+                      $ref: "#/components/schemas/parameterput"
+
+      responses:
+        "200":
+          description: OK. Novo agendamento ao dispositivo adicionado com sucesso.
+        "204":
+          $ref: "#/components/responses/NoContent"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  "/device/{device_id}/schedules/{schedule_id}":
+    put:
+      summary: Altera agendamento
+      description: Altera agendamento
+      tags:
+        - Agenda
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              required: [parameter]
+              allOf:
+                - $ref: "#/components/schemas/schedelesput"
+                - type: object
+                  properties:
+                    parameter:
+                      $ref: "#/components/schemas/parameterput"
+
+      parameters:
+        - $ref: "#/components/parameters/schedule_id"
+        - $ref: "#/components/parameters/device_id"
+      responses:
+        "200":
+          description: OK. Aterou o agendamento com sucesso.
+        "204":
+          $ref: "#/components/responses/NoContent"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+    delete:
+      summary: Remove agendamento
+      description: Remove agendamento
+      tags:
+        - Agenda
+      parameters:
+        - $ref: "#/components/parameters/schedule_id"
+        - $ref: "#/components/parameters/device_id"
+      responses:
+        "200":
+          description: OK. Removeu agendamento com sucesso.
+        "204":
+          $ref: "#/components/responses/NoContent"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+security:
+  - briseAuth: []
