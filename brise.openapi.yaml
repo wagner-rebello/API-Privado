@@ -58,17 +58,17 @@ components:
           type: boolean
           description: Agendamento habilitado
           example: true
-        date_start:
+        dateStart:
           type: integer
           format: int32
           description: Data de inicio do agendamento em UT (Universal TIme)
           example: 1622126644
-        date_end:
+        dateEnd:
           type: integer
           format: int32
           description: Data de fim do agendamento em UT (Universal TIme)
           example: 1622126644
-        repetition_mode:
+        repetitionMode:
           type: integer
           format: int32
           description: |-
@@ -79,7 +79,7 @@ components:
             - 3: Meses
             - 4: Anos
           example: 1
-        repetition_value:
+        repetitionValue:
           type: integer
           format: int32
           description: |-
@@ -92,18 +92,18 @@ components:
           example: 1
     schedelesput:
       required:
-        [name, enable, date_start, date_end, repetition_mode, repetition_value]
+        [name, enable, dateStart, dateEnd, repetitionMode, repetitionValue]
       allOf:
         - $ref: "#/components/schemas/schedules"
       properties:
         name:
           maxLength: 20
           pattern: ^[A-Za-z0-9]{0,20}$
-        date_start:
+        dateStart:
           minimum: 0
-        date_end:
+        dateEnd:
           minimum: 0
-        repetition_mode:
+        repetitionMode:
           minimum: 0
           maximum: 4
     variables:
@@ -125,29 +125,29 @@ components:
           type: integer
           description: Consumo do mês vigente em [KWh] `Obtido por sensor de consumo externo`
           example: 23
-        consumption_estimated:
+        consumptionEstimated:
           type: integer
           description: Consumo estimado do mês vigente em [KWh] `Estimado pelo perfil do uso e capacidade do AC`
           example: 50
     devices:
       type: object
       properties:
-        device_id:
+        deviceId:
           type: integer
           description: Número de série do dispositivo
           example: 100000
-        device_user:
+        deviceUser:
           type: string
           description: Usuário do dispositivo
           example: admin
-        device_password:
+        devicePassword:
           type: string
           description: Senha do dispositivo
           example: "123456"
     user:
       type: object
       properties:
-        user_id:
+        userId:
           type: integer
           description: Número único de identificação do usuário
           example: 1
@@ -260,23 +260,23 @@ components:
           type: string
           description: Nome para identificação do dispositivo
           example: Maquina 1
-        time_zone:
+        timeZone:
           type: integer
           description: Fuso horário
           example: -3
-        group_leve1:
+        groupLevel1:
           type: string
           description: Grupo nivel 1
           example: PredioAdministracao
-        group_leve2:
+        groupLevel2:
           type: string
           description: Grupo nivel 2
           example: BlocoA
-        group_leve3:
+        groupLevel3:
           type: string
           description: Grupo nivel 3
           example: PrimeiroAndar
-        group_leve4:
+        groupLevel4:
           type: string
           description: Grupo nivel 4
           example: SalaReuniao
@@ -284,19 +284,19 @@ components:
           type: integer
           description: Potencia frigorifica da AC em BTU
           example: 12000
-        log_day:
+        logDay:
           type: integer
           description: Dia do mes para registro do consumo
           example: 31
-        pulse_kw:
+        pulseKw:
           type: integer
           description: Numero de pulsos por KW (QuiloWhatt) do sensor de consumo externo
           example: 2000
-        enable_fan:
+        enableFan:
           type: boolean
           description: Habilita as funções de ventilação
           example: true
-        enable_heat:
+        enableHeat:
           type: boolean
           description: Habilita as funções de aquecimento
           example: true
@@ -306,29 +306,29 @@ components:
           example: true
     configput:
       required:
-        [name, time_zone, btu, log_day, pulse_kw, enable_fan, enable_heat, dnd]
+        [name, timeZone, btu, logDay, pulseKw, enableFan, enableHeat, dnd]
       allOf:
         - $ref: "#/components/schemas/config"
       properties:
         name:
           maxLength: 20
           pattern: ^[A-Za-z0-9]{0,20}$
-        time_zone:
+        timeZone:
           minimum: -12
           maximum: 13
-        group_leve1:
+        groupLevel1:
           maxLength: 20
           pattern: ^[A-Za-z0-9]{0,20}$
-        group_leve2:
+        groupLevel2:
           maxLength: 20
           pattern: ^[A-Za-z0-9]{0,20}$
-        group_leve3:
+        groupLevel3:
           maxLength: 20
           pattern: ^[A-Za-z0-9]{0,20}$
-        group_leve4:
+        groupLevel4:
           maxLength: 20
           pattern: ^[A-Za-z0-9]{0,20}$
-        log_day:
+        logDay:
           minimum: 1
           maximum: 31
           description: Dia do mês para registro do consumo. `O registro irá ocorrer as 23:59:59 do dia.`
@@ -407,21 +407,21 @@ paths:
           application/json:
             schema:
               required:
-                - device_id
-                - device_user
-                - device_password
+                - deviceId
+                - deviceUser
+                - devicePassword
               properties:
-                device_id:
+                deviceId:
                   type: integer
                   description: Número de série do dispositivo
                   maximum: 999999
                   example: 100000
-                device_user:
+                deviceUser:
                   type: string
                   description: Usuário do dispositivo
                   maxLength: 20
                   example: admin
-                device_password:
+                devicePassword:
                   type: string
                   description: Senha do dispositivo
                   maxLength: 20
