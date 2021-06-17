@@ -577,7 +577,7 @@ paths:
                       allOf:
                         - type: object
                           properties:
-                            schedule_id:
+                            scheduleId:
                               type: integer
                               format: int32
                               description: Número único de identificação do agendamento
