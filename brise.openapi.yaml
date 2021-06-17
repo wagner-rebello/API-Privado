@@ -35,7 +35,11 @@ info:
 
 tags:
   - name: Usuário
+    description: |
+      Para ter acesso aos dispositivos que estejam utilizando os serviços de Cloud é necessário uma conta no serviço e adicionar os dispositivos a conta de usuário com as devidas credencias de dispositivo.
   - name: Dispositivo
+    description: |
+      As informações de um dispositivo só serão acessiveis se a relação entre o usuário e o dispositivo existir e estiver com as credenciais do dispositivo corretas.
   - name: Agenda
     description: |
       A agenda contempla registros de agendamentos locais que serão executados de forma independente do serviço de Cloud, sendo garantida a execução do agendamento.
@@ -184,10 +188,6 @@ components:
             - 2: Automatico
             - 3: Ventilação
           example: 0
-        setpointCool:
-          type: integer
-          description: Temperatura desejada para resfriamento
-          example: 24
         fanSpeed:
           type: integer
           description: |-
@@ -196,6 +196,10 @@ components:
             - 2: Velocidade Média
             - 3: Velocidade Alta
           example: 3
+        setpointCool:
+          type: integer
+          description: Temperatura desejada para resfriamento
+          example: 24
         setpointHeat:
           type: integer
           description: Temperatura desejada para aquecimento
@@ -234,13 +238,13 @@ components:
             - 1: Aquecimento
             - 2: Automatico `Apenas no Modo Eco de funcionamento dispositivo`
             - 3: Ventilação
+        fanSpeed:
+          minimum: 1
+          maximum: 3
         setpointCool:
           minimum: 0
           maximum: 28
           description: Temperatura desejada para resfriamento `0 = desliga o AC`
-        fanSpeed:
-          minimum: 1
-          maximum: 3
         setpointHeat:
           minimum: 0
           maximum: 28
@@ -340,20 +344,20 @@ components:
       description: Forbidden. Não possue acesso ao dispositivo.
     NoContent:
       description: No Content. O dispositivo pode estar desligado no momento ou sua autenticação está incorreta.
-    NotFound:
-      description: Not Found. Agendamento não localizado para remove-lo.
+    BadRequest:
+      description: Bad Request. O formato da requisição não respeitou ao menos um dos critérios.
 
   parameters:
-    schedule_id:
-      name: schedule_id
+    scheduleId:
+      name: scheduleId
       in: path
       description: Número único de identificação do agendamento
       example: 1622135820
       required: true
       schema:
         type: integer
-    device_id:
-      name: device_id
+    deviceId:
+      name: deviceId
       in: path
       required: true
       description: Número de série do dispositivo Brise
@@ -376,7 +380,7 @@ components:
           tokenUrl: "https://brisev2.agst.com.br:8090/api/v2/exchange-code"
 
 paths:
-  /user/devices:
+  "/user/devices":
     get:
       summary: Obtem dispositivos
       description: Obtem os dispositivos ao qual a conta do usuário tem acesso
@@ -427,34 +431,40 @@ paths:
                   maxLength: 20
                   example: "123456"
       responses:
-        "200":
-          description: OK. Adiciona o dispositivo ao usuário com sucesso.
+        "201":
+          description: Created. Adiciounou o dispositivo ao usuário com sucesso.
+        "202":
+          description: Accepted. Não foi realizada a adição. O dispositivo já foi adicionado anteriormente ou não existe.
+        "400":
+          $ref: "#/components/responses/BadRequest"
         "401":
           $ref: "#/components/responses/Unauthorized"
-  "/user/devices/{device_id}":
+  "/user/device/{deviceId}":
     delete:
       summary: Remove dispositivo
       description: Remove dispositivo da conta do Usuário
       tags:
         - Usuário
       parameters:
-        - $ref: "#/components/parameters/device_id"
+        - $ref: "#/components/parameters/deviceId"
       responses:
-        "200":
-          description: OK. Dispositivo removido com sucesso.
+        "202":
+          description: Accepted. Dispositivo removido com sucesso.
+        "400":
+          $ref: "#/components/responses/BadRequest"
         "401":
           $ref: "#/components/responses/Unauthorized"
-        "404":
-          description: Not Found. Este dispositivo não está relacionado ao usuário para remove-lo.
+        "406":
+          description: Not Acceptable. Este dispositivo não está relacionado ao usuário para removê-lo.
 
-  "/device/{device_id}/configs":
+  "/device/{deviceId}/configs":
     get:
       summary: Obtem configurações
       description: Obtem as configurações de um dispositivo especifico
       tags:
         - Dispositivo
       parameters:
-        - $ref: "#/components/parameters/device_id"
+        - $ref: "#/components/parameters/deviceId"
       responses:
         "200":
           description: OK. Retorna as configurações do dispositivo com sucesso.
@@ -474,7 +484,7 @@ paths:
       tags:
         - Dispositivo
       parameters:
-        - $ref: "#/components/parameters/device_id"
+        - $ref: "#/components/parameters/deviceId"
       requestBody:
         required: true
         content:
@@ -482,22 +492,24 @@ paths:
             schema:
               $ref: "#/components/schemas/configput"
       responses:
-        "200":
-          description: OK. Configurações alteradas com sucesso.
+        "202":
+          description: Accepted. Configurações alteradas com sucesso.
         "204":
           $ref: "#/components/responses/NoContent"
+        "400":
+          $ref: "#/components/responses/BadRequest"
         "401":
           $ref: "#/components/responses/Unauthorized"
         "403":
           $ref: "#/components/responses/Forbidden"
-  "/device/{device_id}/parameters":
+  "/device/{deviceId}/parameters":
     get:
       summary: Obtem paremetrizações
       description: Obtem as paremetrizações de um dispositivo especifico
       tags:
         - Dispositivo
       parameters:
-        - $ref: "#/components/parameters/device_id"
+        - $ref: "#/components/parameters/deviceId"
       responses:
         "200":
           description: OK. Retorna as parametrizações do dispositivo com sucesso.
@@ -517,7 +529,7 @@ paths:
       tags:
         - Dispositivo
       parameters:
-        - $ref: "#/components/parameters/device_id"
+        - $ref: "#/components/parameters/deviceId"
       requestBody:
         required: true
         content:
@@ -525,22 +537,24 @@ paths:
             schema:
               $ref: "#/components/schemas/parameterput"
       responses:
-        "200":
-          description: OK. Alterada as parametrizações com sucesso.
+        "202":
+          description: Accepted. Alterada as parametrizações com sucesso.
         "204":
           $ref: "#/components/responses/NoContent"
+        "400":
+          $ref: "#/components/responses/BadRequest"
         "401":
           $ref: "#/components/responses/Unauthorized"
         "403":
           $ref: "#/components/responses/Forbidden"
-  "/device/{device_id}/variables":
+  "/device/{deviceId}/variables":
     get:
       summary: Obtem variáveis
       description: Obtem as variáveis do dispositivo
       tags:
         - Dispositivo
       parameters:
-        - $ref: "#/components/parameters/device_id"
+        - $ref: "#/components/parameters/deviceId"
       responses:
         "200":
           description: OK. Retorna as variaveis do sistema com sucesso.
@@ -555,14 +569,14 @@ paths:
         "403":
           $ref: "#/components/responses/Forbidden"
 
-  "/device/{device_id}/schedules":
+  "/device/{deviceId}/schedules":
     get:
       summary: Obtem agendamentos
       description: Obtem todos os agendamentos do dispositivo
       tags:
         - Agenda
       parameters:
-        - $ref: "#/components/parameters/device_id"
+        - $ref: "#/components/parameters/deviceId"
       responses:
         "200":
           description: OK. Retorna os agendamentos do dispositivo com sucesso.
@@ -596,17 +610,23 @@ paths:
     post:
       summary: Adiciona agendamento
       description: |
-        Adiciona novo agendamento ao dispositivo.<aside>`Este número (schedule_id) deve ser único. Indicamos o uso do relogio do aplicativo.`</aside>
+        Adiciona novo agendamento ao dispositivo.<aside>`Este key (scheduleId) deve ser um número único. Indicamos o uso do relógio do sistema onde estiver rodando o aplicativo.`</aside>
       tags:
         - Agenda
       parameters:
-        - $ref: "#/components/parameters/device_id"
+        - $ref: "#/components/parameters/deviceId"
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              required: [parameter]
+              required: [parameter, scheduleId]
+              properties:
+                scheduleId:
+                  description: Número único de identificação do agendamento
+                  example: 1622135820
+                  type: integer
+                  format: int32
               allOf:
                 - $ref: "#/components/schemas/schedelesput"
                 - type: object
@@ -615,15 +635,17 @@ paths:
                       $ref: "#/components/schemas/parameterput"
 
       responses:
-        "200":
-          description: OK. Novo agendamento ao dispositivo adicionado com sucesso.
+        "202":
+          description: Accepted. Novo agendamento ao dispositivo adicionado com sucesso.
         "204":
           $ref: "#/components/responses/NoContent"
+        "400":
+          $ref: "#/components/responses/BadRequest"
         "401":
           $ref: "#/components/responses/Unauthorized"
         "403":
           $ref: "#/components/responses/Forbidden"
-  "/device/{device_id}/schedules/{schedule_id}":
+  "/device/{deviceId}/schedules/{scheduleId}":
     put:
       summary: Altera agendamento
       description: Altera agendamento
@@ -643,11 +665,11 @@ paths:
                       $ref: "#/components/schemas/parameterput"
 
       parameters:
-        - $ref: "#/components/parameters/schedule_id"
-        - $ref: "#/components/parameters/device_id"
+        - $ref: "#/components/parameters/scheduleId"
+        - $ref: "#/components/parameters/deviceId"
       responses:
-        "200":
-          description: OK. Aterou o agendamento com sucesso.
+        "202":
+          description: Accepted. O pedido de alteração do agendamento foi enviado com sucesso.
         "204":
           $ref: "#/components/responses/NoContent"
         "401":
@@ -660,19 +682,17 @@ paths:
       tags:
         - Agenda
       parameters:
-        - $ref: "#/components/parameters/schedule_id"
-        - $ref: "#/components/parameters/device_id"
+        - $ref: "#/components/parameters/scheduleId"
+        - $ref: "#/components/parameters/deviceId"
       responses:
-        "200":
-          description: OK. Removeu agendamento com sucesso.
+        "202":
+          description: Accepted. O pedido para remoção do agendamento foi enviado com sucesso.
         "204":
           $ref: "#/components/responses/NoContent"
         "401":
           $ref: "#/components/responses/Unauthorized"
         "403":
           $ref: "#/components/responses/Forbidden"
-        "404":
-          $ref: "#/components/responses/NotFound"
 
 security:
   - briseAuth: []
