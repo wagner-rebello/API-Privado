@@ -439,7 +439,7 @@ paths:
           $ref: "#/components/responses/BadRequest"
         "401":
           $ref: "#/components/responses/Unauthorized"
-  "/user/device/{deviceId}":
+  "/user/devices/{deviceId}":
     delete:
       summary: Remove dispositivo
       description: Remove dispositivo da conta do Usuário
