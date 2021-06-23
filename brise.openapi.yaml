@@ -87,8 +87,8 @@ components:
           type: integer
           format: int32
           description: |-
-            Modo de repetição:
-            - Sem repetição: any
+            Valor de repetição:
+            - Sem repetição: Apenas uma vez
             - Semanal: (2<sup>6</sup> domingo) + (2<sup>5</sup> sábado) + (2<sup>4</sup> sexta) + (2<sup>3</sup> quinta) + (2<sup>2</sup> quarta) + (2<sup>1</sup> terça) + (2<sup>0</sup> segunda)
             - Dias: Número de dias que o agendamento irá se repetir
             - Meses: Número de meses que o agendamento irá se repetir
@@ -102,7 +102,9 @@ components:
       properties:
         name:
           maxLength: 20
-          pattern: ^[A-Za-z0-9]{0,20}$
+          pattern: ^[A-Za-z0-9\s]$
+        enable:
+          type: boolean
         dateStart:
           minimum: 0
         dateEnd:
@@ -286,6 +288,57 @@ components:
           example: SalaReuniao
         btu:
           type: integer
+          enum:
+            [
+              7000,
+              7500,
+              8500,
+              9000,
+              9500,
+              10000,
+              10500,
+              11000,
+              11500,
+              12000,
+              13000,
+              15000,
+              17000,
+              18000,
+              18500,
+              19000,
+              20000,
+              21000,
+              22000,
+              23000,
+              24000,
+              24500,
+              26000,
+              27000,
+              28000,
+              29000,
+              30000,
+              32000,
+              34000,
+              35000,
+              36000,
+              37000,
+              38000,
+              39000,
+              41140,
+              46000,
+              47000,
+              48000,
+              50000,
+              51000,
+              52648,
+              54000,
+              55000,
+              56000,
+              57000,
+              58000,
+              59000,
+              60000,
+            ]
           description: Potencia frigorifica da AC em BTU
           example: 12000
         logDay:
@@ -316,26 +369,33 @@ components:
       properties:
         name:
           maxLength: 20
-          pattern: ^[A-Za-z0-9]{0,20}$
+          pattern: ^[A-Za-z0-9\s]$
         timeZone:
           minimum: -12
           maximum: 13
         groupLevel1:
           maxLength: 20
-          pattern: ^[A-Za-z0-9]{0,20}$
+          pattern: ^[A-Za-z0-9-]$
+          description: Grupo nivel 1. `Para o dispositivo não pertencer a um grupo envie "-"`
         groupLevel2:
           maxLength: 20
-          pattern: ^[A-Za-z0-9]{0,20}$
+          pattern: ^[A-Za-z0-9-]$
+          description: Grupo nivel 2. `Para o dispositivo não pertencer a um grupo envie "-"`
         groupLevel3:
           maxLength: 20
-          pattern: ^[A-Za-z0-9]{0,20}$
+          pattern: ^[A-Za-z0-9-]$
+          description: Grupo nivel 3. `Para o dispositivo não pertencer a um grupo envie "-"`
         groupLevel4:
           maxLength: 20
-          pattern: ^[A-Za-z0-9]{0,20}$
+          pattern: ^[A-Za-z0-9-]$
+          description: Grupo nivel 4. `Para o dispositivo não pertencer a um grupo envie "-"`
         logDay:
           minimum: 1
           maximum: 31
           description: Dia do mês para registro do consumo. `O registro irá ocorrer as 23:59:59 do dia.`
+        pulseKw:
+          minimum: 1
+          maximum: 65535
 
   responses:
     Unauthorized:
@@ -382,8 +442,8 @@ components:
 paths:
   "/user/devices":
     get:
-      summary: Obtem dispositivos
-      description: Obtem os dispositivos ao qual a conta do usuário tem acesso
+      summary: Obtém dispositivos
+      description: Obtém os dispositivos ao qual a conta do usuário tem acesso
       tags:
         - Usuário
       responses:
@@ -448,8 +508,8 @@ paths:
       parameters:
         - $ref: "#/components/parameters/deviceId"
       responses:
-        "202":
-          description: Accepted. Dispositivo removido com sucesso.
+        "200":
+          description: OK. Dispositivo removido com sucesso.
         "400":
           $ref: "#/components/responses/BadRequest"
         "401":
@@ -459,8 +519,8 @@ paths:
 
   "/device/{deviceId}/configs":
     get:
-      summary: Obtem configurações
-      description: Obtem as configurações de um dispositivo especifico
+      summary: Obtém configurações
+      description: Obtém as configurações de um dispositivo especifico
       tags:
         - Dispositivo
       parameters:
@@ -480,7 +540,8 @@ paths:
           $ref: "#/components/responses/Forbidden"
     put:
       summary: Define configurações
-      description: Altera as configurações do dispositivo especifico
+      description: |
+        Altera as configurações do dispositivo especifico<aside>`Nota: Os grupos devem respeitar sua ordem hierárquica, ou seja, primeiro o equipamento tem que pertencer a um grupo no leve 1 antes de pertencer a outro no level 2.`</aside>
       tags:
         - Dispositivo
       parameters:
@@ -504,8 +565,8 @@ paths:
           $ref: "#/components/responses/Forbidden"
   "/device/{deviceId}/parameters":
     get:
-      summary: Obtem paremetrizações
-      description: Obtem as paremetrizações de um dispositivo especifico
+      summary: Obtém parametrizações
+      description: Obtém as parametrizações de um dispositivo especifico
       tags:
         - Dispositivo
       parameters:
@@ -524,8 +585,8 @@ paths:
         "403":
           $ref: "#/components/responses/Forbidden"
     put:
-      summary: Define paremetrizações
-      description: Altera as paremetrizações do um dispositivo especifico
+      summary: Define parametrizações
+      description: Altera as parametrizações do um dispositivo especifico
       tags:
         - Dispositivo
       parameters:
@@ -549,8 +610,8 @@ paths:
           $ref: "#/components/responses/Forbidden"
   "/device/{deviceId}/variables":
     get:
-      summary: Obtem variáveis
-      description: Obtem as variáveis do dispositivo
+      summary: Obtém variáveis
+      description: Obtém as variáveis do dispositivo
       tags:
         - Dispositivo
       parameters:
@@ -571,8 +632,8 @@ paths:
 
   "/device/{deviceId}/schedules":
     get:
-      summary: Obtem agendamentos
-      description: Obtem todos os agendamentos do dispositivo
+      summary: Obtém agendamentos
+      description: Obtém todos os agendamentos do dispositivo
       tags:
         - Agenda
       parameters:
@@ -610,7 +671,7 @@ paths:
     post:
       summary: Adiciona agendamento
       description: |
-        Adiciona novo agendamento ao dispositivo.<aside>`Este key (scheduleId) deve ser um número único. Indicamos o uso do relógio do sistema onde estiver rodando o aplicativo.`</aside>
+        Adiciona novo agendamento ao dispositivo.<aside>`Ao criar um novo agendamento sugerimos o uso do relógio do sistema para evitar a tentativa de criar mais de um agendamento com o mesmo scheduleId, o que não é permitido.`</aside>
       tags:
         - Agenda
       parameters:
@@ -620,14 +681,15 @@ paths:
         content:
           application/json:
             schema:
-              required: [parameter, scheduleId]
-              properties:
-                scheduleId:
-                  description: Número único de identificação do agendamento
-                  example: 1622135820
-                  type: integer
-                  format: int32
+              required: [scheduleId, parameter]
               allOf:
+                - type: object
+                  properties:
+                    scheduleId:
+                      description: Número único de identificação do agendamento
+                      example: 1622135820
+                      type: integer
+                      format: int32
                 - $ref: "#/components/schemas/schedelesput"
                 - type: object
                   properties:
