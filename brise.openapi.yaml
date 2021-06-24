@@ -246,19 +246,19 @@ components:
         setpointCool:
           minimum: 0
           maximum: 28
-          description: Temperatura desejada para resfriamento `0 = desliga o AC`
+          description: Temperatura desejada para resfriamento <aside>`Para desligar o AC, quando modeAC estiver em Refrigeração ou Ventilação, o valor deve ser zero`</aside>
         setpointHeat:
           minimum: 0
           maximum: 28
-          description: Temperatura desejada para aquecimento `0 = desliga o AC`
+          description: Temperatura desejada para aquecimento <aside>`Para desligar o AC quando modeAC estiver em Aquecimento, o valor deve ser zero`</aside><aside>`O valor deve ser < ecoHeat`</aside>
         ecoCool:
           minimum: 1
           maximum: 28
-          description: Temperatura desejada para economia de resfriamento `O valor tem que ser < que setpointCool`
+          description: Temperatura desejada para economia de resfriamento <aside>`O valor deve ser < setpointCool`</aside>
         ecoHeat:
           minimum: 1
           maximum: 28
-          description: Temperatura desejada para economia de aquecimento `O valor tem que ser > que setpointHeat`
+          description: Temperatura desejada para economia de aquecimento <aside>`O valor deve ser < ecoCool`</aside>
     config:
       type: object
       properties:
@@ -431,8 +431,8 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
-    briseAuth:
       description: Antes de executar chamadas ha API, é necessário um Token de Acesso.<br><br>Para obter um deve-se criar uma conta no serviço através do Brise App em seu smartphone previamente. Para gerar o Token de Acesso [clique aqui](https://brisev2.agst.com.br:8090/api/v2/reqwithlogin), faça seu login que será disponibilizado o Token de Acesso.<h3>Oauth 2.0 authorizationCode authentication</h3>
+    briseAuth:
       type: oauth2
       flows:
         authorizationCode:
