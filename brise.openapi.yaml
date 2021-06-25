@@ -238,27 +238,27 @@ components:
             Modo de funcionamento do Ar Condicionado:
             - 0: Refrigeração
             - 1: Aquecimento
-            - 2: Automatico `Apenas no Modo Eco de funcionamento dispositivo`
-            - 3: Ventilação
+            - 2: Automatico `Válido apenas em Modo Eco de funcionamento dispositivo`
+            - 3: Ventilação `Inválido em Modo Eco de funcionamento dispositivo`
         fanSpeed:
           minimum: 1
           maximum: 3
         setpointCool:
-          minimum: 0
+          minimum: 18
           maximum: 28
-          description: Temperatura desejada para resfriamento <aside>`Para desligar o AC, quando modeAC estiver em Refrigeração ou Ventilação, o valor deve ser zero`</aside>
+          description: Temperatura desejada para resfriamento <aside>`- Para desligar o AC, quando modeAC estiver em Refrigeração ou Ventilação, o valor deve ser zero`</aside>
         setpointHeat:
-          minimum: 0
+          minimum: 18
           maximum: 28
-          description: Temperatura desejada para aquecimento <aside>`Para desligar o AC quando modeAC estiver em Aquecimento, o valor deve ser zero`</aside><aside>`O valor deve ser < ecoHeat`</aside>
+          description: Temperatura desejada para aquecimento <aside>`- Para desligar o AC quando modeAC estiver em Aquecimento, o valor deve ser zero`</aside><aside>`- O valor deve ser < ecoHeat`</aside>
         ecoCool:
-          minimum: 1
+          minimum: 18
           maximum: 28
-          description: Temperatura desejada para economia de resfriamento <aside>`O valor deve ser < setpointCool`</aside>
+          description: Temperatura desejada para economia de resfriamento `Válido apenas em Modo Eco`<aside>`- O valor deve ser < setpointCool`</aside>
         ecoHeat:
-          minimum: 1
+          minimum: 18
           maximum: 28
-          description: Temperatura desejada para economia de aquecimento <aside>`O valor deve ser < ecoCool`</aside>
+          description: Temperatura desejada para economia de aquecimento `Válido apenas em Modo Eco`<aside>`- O valor deve ser < ecoCool`</aside>
     config:
       type: object
       properties:
