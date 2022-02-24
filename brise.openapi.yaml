@@ -135,6 +135,63 @@ components:
           type: integer
           description: Consumo estimado do mês vigente em [KWh] `Estimado pelo perfil do uso e capacidade do AC`
           example: 50
+    logTU:
+      type: object
+      properties:
+        data:
+          type: array
+          description: Estatus do AC
+          # example: [{}]
+          items:
+            type: object
+            properties:
+              dID:
+                type: integer
+              ui:
+                type: number
+              ti:
+                type: number
+              deviceTime:
+                type: integer
+              serverTime:
+                type: integer
+    logCons:
+      type: object
+      properties:
+        data:
+          type: array
+          description: Estatus do AC
+          # example: [{}]
+          items:
+            type: object
+            properties:
+              dID:
+                type: integer
+              consr:
+                type: number
+              conse:
+                type: number
+              deviceTime:
+                type: integer
+              serverTime:
+                type: integer
+              # log
+        # temperature:
+        #   type: number
+        #   description: Temperatura do ambiente em [ºC]
+        #   example: 24.5
+        # humidity:
+        #   type: integer
+        #   description: Umidade relativa do ambiente em [%]
+        #   example: 50
+        # consumption:
+        #   type: integer
+        #   description: Consumo do mês vigente em [KWh] `Obtido por sensor de consumo externo`
+        #   example: 23
+        # consumptionEstimated:
+        #   type: integer
+        #   description: Consumo estimado do mês vigente em [KWh] `Estimado pelo perfil do uso e capacidade do AC`
+        #   example: 50
     devices:
       type: object
       properties:
@@ -259,6 +316,29 @@ components:
           minimum: 18
           maximum: 28
           description: Temperatura desejada para economia de aquecimento `Válido apenas em Modo Eco`<aside>`- O valor deve ser < ecoCool`</aside>
+    logput:
+      required: [type, start]
+      properties:
+        type:
+          type: integer
+          minimum: 0
+          maximum: 2
+          description: 0 - nao implementado/registro de eventos, 1 - consumo, 2 - temp. umid
+        start:
+          type: integer
+          minimum: 1577836800
+          maximum: 34294967295
+          description: Timestamp inicial de consulta.
+        end:
+          type: integer
+          minimum: 1577836800
+          maximum: 34294967295
+          description: Timestamp final de consulta.
+        next:
+          type: integer
+          minimum: 1
+          maximum: 400
+          description: Quando não usado timestamp final informa a quantidade apartir do inicio.
     config:
       type: object
       properties:
@@ -625,6 +705,36 @@ paths:
                 $ref: "#/components/schemas/variables"
         "204":
           $ref: "#/components/responses/NoContent"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+  "/device/{deviceId}/log":
+    post:
+      summary: Obtém Registros
+      description: Obtém os registros do dispositivo que estão armazenados na Cloud
+      tags:
+        - Dispositivo
+      parameters:
+        - $ref: "#/components/parameters/deviceId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/logput"
+      responses:
+        "200":
+          description: OK. Retorna os registros do sistema com sucesso.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/logTU"
+                  - $ref: "#/components/schemas/logCons"
+        "400":
+          $ref: "#/components/responses/BadRequest"
         "401":
           $ref: "#/components/responses/Unauthorized"
         "403":
